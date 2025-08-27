@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import {StartMockWorker} from "@/component/mockServer"
+import {StartMockWorker} from "@/components/mockServer"
 
 export const metadata: Metadata = {
   title: "Create Next App",

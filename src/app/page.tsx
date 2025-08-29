@@ -2,41 +2,18 @@
 "use client";
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import React, { useEffect, useRef, useState } from 'react';
+import {summaryTexts } from '@/mock/__fixture__/summaryTexts';
+import { Streamdown } from 'streamdown';
 
 const Home = () => {
   const hasInitialized = useRef(false);
-  const [summaryText, setSummaryText] = useState('');
+  const [summaryText, setSummaryText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState('');
-  
-  const summaryTexts = {
-    'AI Technology': 'Artificial Intelligence represents one of the most transformative technologies of our time. From machine learning algorithms that can process vast amounts of data to natural language processing systems that understand human communication, AI is reshaping industries and creating new possibilities. Modern AI systems can perform complex tasks such as image recognition, language translation, and predictive analytics with remarkable accuracy. As we continue to advance in this field, AI promises to enhance human capabilities and solve some of our most challenging problems.',
-    'Web Development': 'Modern web development has evolved dramatically with the introduction of powerful frameworks and tools. React, Next.js, and TypeScript have revolutionized how we build user interfaces, providing developers with robust solutions for creating scalable and maintainable applications. Server-side rendering, static site generation, and edge computing are pushing the boundaries of web performance. The integration of AI and machine learning into web applications is opening new frontiers for intelligent user experiences.',
-    'Data Science': 'Data Science combines statistical analysis, machine learning, and domain expertise to extract meaningful insights from complex datasets. In today\'s data-driven world, organizations rely on data scientists to identify patterns, predict trends, and make informed decisions. From recommendation systems that personalize user experiences to predictive models that forecast market behavior, data science is at the heart of digital transformation across industries.',
-    'Technology Trends': 'The technology landscape is constantly evolving with emerging trends that shape our digital future. Cloud computing has revolutionized how we deploy and scale applications, while edge computing brings processing closer to data sources. Quantum computing promises to solve complex problems that are intractable for classical computers. Meanwhile, sustainable technology and green computing are becoming increasingly important as we address environmental challenges through innovation.',
-    'GitHub Markdown': '# GitHub Markdown Guide\n\n## Headers\n\n### This is a level 3 header\n\n**Bold text** and *italic text* for emphasis.\n\n## Code Examples\n\n```javascript\nconst greeting = "Hello, World!";\nconsole.log(greeting);\n```\n\n## Lists\n\n- Unordered list item 1\n- Unordered list item 2\n  - Nested item\n\n1. Ordered list item 1\n2. Ordered list item 2\n\n## Links and Images\n\n[GitHub](https://github.com)\n\n![Alt text](https://via.placeholder.com/150)\n\n## Tables\n\n| Feature | Status |\n|---------|--------|\n| Syntax highlighting | ✅ |\n| Task lists | ✅ |\n| Emoji support | 🎉 |\n\n## Blockquotes\n\n> This is a blockquote\n> with multiple lines\n\n## Task Lists\n\n- [x] Completed task\n- [ ] Pending task\n- [ ] Another pending task'
-  };
-  
-  const typeText = (text: string) => {
-    setIsTyping(true);
-    setSummaryText('');
-    let index = 0;
-    
-    const interval = setInterval(() => {
-      if (index < text.length) {
-        setSummaryText(prev => prev + text[index]);
-        index++;
-      } else {
-        clearInterval(interval);
-        setIsTyping(false);
-      }
-    }, 30); // Adjust speed here (lower = faster)
-  };
+  const [selectedTopic, setSelectedTopic] = useState(Object.entries(summaryTexts)[0][0]);
   
   const handleSummaryClick = (topic: string) => {
+    setSummaryText("");
     setSelectedTopic(topic);
-    const text = summaryTexts[topic as keyof typeof summaryTexts];
-    typeText(text);
   };
   useEffect(() => {
       // Prevent multiple connections in React Strict Mode
@@ -52,7 +29,12 @@ const Home = () => {
       const getStream = async () => {
         try {
           console.log("SSE starts");
-          await fetchEventSource('/api/sse', {
+          setIsTyping(true);
+          const url = new URL('/api/sse', window.location.origin);
+          if (selectedTopic) {
+            url.searchParams.set('summary', selectedTopic);
+          }
+          await fetchEventSource(url.toString(), {
             signal,
             async onopen(response) {
               if (response.ok) {
@@ -68,21 +50,23 @@ const Home = () => {
             onmessage(ev) {
               const data = JSON.parse(ev.data);
               console.log("SSE data: ", data);
-              if (data.event === "error") {
+              if (data.type === "error") {
                 controller.abort();
                 console.log("SSE error");
               }
-              if (data.event === "done") {
+              if (data.type === "close") {
                 console.log("SSE done");
               }
-              if (["done", "error"].includes(data.event)) {
+              if (["close", "error"].includes(data.type)) {
                 console.log("SSE closed");
+                setIsTyping(false);
                 return;
               }
-              // setMessages(prev => [...prev,data])
+              setSummaryText(prev => prev + data.message);
             },
             onerror(err) {
               console.log("SSE error: ", err);
+              setIsTyping(false);
             }
           });
         } catch (error) {
@@ -100,7 +84,7 @@ const Home = () => {
         controller.abort();
         hasInitialized.current = false;
       };
-    }, [])
+    }, [selectedTopic])
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/* AI Summary Block */}
@@ -152,9 +136,9 @@ const Home = () => {
                 )}
               </div>
               <div className="text-gray-800 leading-relaxed text-sm">
-                {summaryText}
+                <Streamdown>{summaryText}</Streamdown>
                 {isTyping && (
-                  <span className="inline-block w-0.5 h-4 bg-gray-900 ml-1 animate-pulse"></span>
+                  <span className="inline-block w-0.5 h-4 bg-gray-900 ml-1 animate-pulse align-text-bottom"></span>
                 )}
               </div>
               {!isTyping && summaryText && (

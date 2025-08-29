@@ -1,21 +1,39 @@
 import {
   http, HttpResponse,
 } from "msw";
+import {summaryTexts } from '@/mock/__fixture__/summaryTexts';
+
+const summaryArray = Object.entries(summaryTexts).reduce((acc: Record<string, string[]>, text) => {
+  acc[text[0]] = text[1].split("");
+  return acc;
+}, {});
 
 export const handlers = [
   
   // SSE (Server-Sent Events) handler
-  http.get("/api/sse", () => {
+  http.get("/api/sse", ({ request }) => {
+    const url = new URL(request.url);
+    const interval =20;
+    const summaryKey = url.searchParams.get('summary');
+    const maxCount = summaryKey && summaryArray[summaryKey].length || 10;
+    
     const stream = new ReadableStream({
       start(controller) {
         let counter = 0;
         
         const sendEvent = () => {
+          let message = "";
+          
+          // If summary key is provided and exists in summaryArray, use summary text
+          if (summaryKey && summaryArray[summaryKey] && summaryArray[summaryKey][counter]) {
+            message = summaryArray[summaryKey][counter];
+          }
+          
           const data = {
             id: counter,
-            message: `Server message ${counter}`,
+            message,
             timestamp: new Date().toISOString(),
-            type: 'update'
+            type: 'update',
           };
           
           const eventData = `data: ${JSON.stringify(data)}\n\n`;
@@ -23,8 +41,8 @@ export const handlers = [
           
           counter++;
           
-          if (counter < 10) {
-            setTimeout(sendEvent, 1000); // Send event every second
+          if (counter < maxCount) {
+            setTimeout(sendEvent, interval); // Send event with custom interval
           } else {
             // Send final event and close
             controller.enqueue(new TextEncoder().encode('data: {"type":"close","message":"Stream ended"}\n\n'));

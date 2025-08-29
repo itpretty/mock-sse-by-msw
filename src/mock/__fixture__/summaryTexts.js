@@ -73,9 +73,9 @@ export const Button: React.FC<ButtonProps> = ({ label, onClick }) => (
 `,
     'Mathematics': `## 内联数学
 
-二次方程公式是 $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$，用于求解 $ax^2 + bx + c = 0$。
+二次方程公式是 $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$，用于求解 $$ax^2 + bx + c = 0$$。
 
-欧拉恒等式：$e^{i\\pi} + 1 = 0$ 结合了五个基本数学常数。
+欧拉恒等式：$$e^{i\\pi} + 1 = 0$$ 结合了五个基本数学常数。
 
 ## 块级数学
 
@@ -87,9 +87,9 @@ $$
 
 ## 求和和积分
 
-前 $n$ 个自然数的和：$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$
+前 $$n$$ 个自然数的和：$$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
 
-分部积分：$\\int u \\, dv = uv - \\int v \\, du$
+分部积分：$$\\int u \\, dv = uv - \\int v \\, du$$
 `,
  'Unclosed Markdown': `# 这是未闭合的 Markdown 标签的展示
 
@@ -100,5 +100,44 @@ $$
 \`这是一个长的内联代码块，应该是未终止的，并且继续了相当长的时间，包括一些类似代码的内容，比如 const foo = "bar"; 等，看看当代码块没有正确关闭时解析器如何处理\`
 
 [这是一个非常长的链接文本，未终止，不断地继续，显示未终止链接在预览中是如何渲染的，特别是当链接文本冗长而 URL 缺失或不完整时](https://www.google.com)
-`
+`, 
+'Mermaid Diagram': `Interactive diagram rendering with manual control. Click the copy icon next to any Mermaid diagram to copy the code to your clipboard.
+
+## Simple Flowchart
+
+\`\`\`mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Success]
+    B -->|No| D[Try Again]
+    D --> B
+    C --> E[End]
+\`\`\`
+
+## Process Flow
+
+\`\`\`mermaid
+flowchart LR
+    A[User Input] --> B[Validate]
+    B --> C{Valid?}
+    C -->|Yes| D[Process]
+    C -->|No| E[Show Error]
+    D --> F[Save Result]
+    E --> A
+    F --> G[Complete]
+\`\`\`
+
+## API Sequence
+
+\`\`\`mermaid
+sequenceDiagram
+    participant U as User
+    participant A as App
+    participant S as Server
+    
+    U->>A: Click render
+    A->>S: API Request
+    S-->>A: Response
+    A-->>U: Show diagram
+\`\`\``
   };

@@ -12,6 +12,7 @@ const Home = () => {
   const [selectedTopic, setSelectedTopic] = useState(Object.entries(summaryTexts)[0][0]);
   
   const handleSummaryClick = (topic: string) => {
+    if (topic === selectedTopic) return;
     setSummaryText("");
     setSelectedTopic(topic);
   };
@@ -95,14 +96,14 @@ const Home = () => {
         </div>
         
         {/* 5 Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {Object.keys(summaryTexts).map((topic) => (
             <button
               key={topic}
               onClick={() => handleSummaryClick(topic)}
               disabled={isTyping}
               className={`
-                inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                inline-flex items-center justify-center px-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                 border border-gray-300 hover:border-gray-400 hover:bg-gray-50
                 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
                 disabled:opacity-50 disabled:cursor-not-allowed
@@ -137,9 +138,9 @@ const Home = () => {
               </div>
               <div className="text-gray-800 leading-relaxed text-sm">
                 <Streamdown>{summaryText}</Streamdown>
-                {isTyping && (
+                {/* isTyping && (
                   <span className="inline-block w-0.5 h-4 bg-gray-900 ml-1 animate-pulse align-text-bottom"></span>
-                )}
+                ) */}
               </div>
               {!isTyping && summaryText && (
                 <div className="mt-4 text-xs text-gray-500 border-t border-gray-300 pt-3">
